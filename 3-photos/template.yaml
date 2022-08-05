@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Innovator Island - 3 Photos.
+Parameters:
+  PBucketName:
+    Type: String
+    Description: Name of the processing S3 bucket
+
+  FBucketName:
+    Type: String
+    Description: Name of the Final S3 bucket
+
+Globals:
+  Function:
+    Timeout: 10
+
+Resources:
+  ChromekeyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 1-chromakey/remove-chromakey/
+      Handler: app.handler
+      Runtime: python3.7
+      MemorySize: 3008
+      Environment:
+        Variables:
+          OUTPUT_BUCKET_NAME: !Ref PBucketName
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Resource: '*'
+              Action:
+                - s3:*
+
+  CompositeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 2-compositing/lambdaFunction/
+      Handler: app.handler
+      Runtime: nodejs14.x
+      MemorySize: 2048
+      Environment:
+        Variables:
+          OUTPUT_BUCKET_NAME: !Ref FBucketName
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Resource: '*'
+              Action:
+                - s3:*
